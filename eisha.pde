@@ -1,8 +1,24 @@
 /*
   code name : eisha
   license   : GNU GPL v3
-*/
 
+  notice:
+  save key = menu
+  
+  !!!issue!!!!!
+  -save or not -> draw something
+  -enq mode
+  -SlideShow
+  
+  for camera mode
+        app_status = "tap to shot";
+        toggleCamera();
+  
+*/
+import java.awt.image.BufferedImage;
+import javax.imageio.*;
+import android.app.Activity;
+import android.os.*;
 import android.content.Context;
 import android.hardware.Camera.Size;
 import android.hardware.Camera;
@@ -11,86 +27,205 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import java.util.List;
+import java.util.Timer;
 import java.io.File;
 import android.view.Surface;
+import android.view.WindowManager;
 import android.hardware.Camera.Parameters;
 
 String app_status = "In preparation...";
+File directory = new File("//sdcard//eisha/");
+File directory2 = new File("//sdcard//eisha/enq/");
 PImage photo;
+long utime;
+File dir = new File("//sdcard//eisha/");
+File[] files;
 
 /*  static data and settings  */
 
 String question1;
-String[] answer1 = new String[3];
+String[] answer1 = new String[4];
 String question2;
-String answer2;
+String[] answer2 = new String[2];
+RectButton rect1, rect2, rect3, rect4, rect5, rect6;
 
-void setup()
-{
-
-  frameRate(15);
+void setup() {
+  frameRate(10);
   //画面の向きを固定(横)
   orientation(LANDSCAPE);
-  
-  question1 = "Q1";
-  answer1[0] = "A1";
-  answer1[1] = "A2";
-  answer1[2] = "A3";
-  question2 = "Q2";
-  answer2 = "A2";
-  
+  size(768,432);
+  question1 = "Q1 Was this watch expensive?";
+  answer1[0] = "Yes";
+  answer1[1] = "No";
+  answer1[2] = "maybe";
+  answer1[3] = "-----";
+  question2 = "Q2 Do you study English everyday?";
+  answer2[0] = "Yes";
+  answer2[1] = "No";  
   fill(255);
-  textSize(40);
+  println("setting done!!!!!!");
 }
 
- public String sketchRenderer() {
+public String sketchRenderer() {
    return P2D;
- }
+}
 /*  end  */
 
+float posx;
+float posy;
+int timer = 0;
+PImage slideimage1;
+PImage slideimage2;
 
-  
 void draw()
 {
-  text(app_status,150,380,500,300);
+  if(app_status=="menu to shot"){
+      textSize(40);
+      text(app_status,400,80);
+      
+  } else if(app_status=="enq") {
+      background(255);
+      textSize(20);
+      fill(0);
+      text(question1,30,50);
+      text(question2,30,300);
+      textSize(30);
+      text(answer1[0],80,130);
+      text(answer1[1],450,130);
+      text(answer1[2],80,210);
+      text(answer1[3],450,210);
+      text(answer2[0],80,360);
+      text(answer2[1],450,360);
+      rect(600,10,150,50);
+      fill(255);
+      text("submit",625,45);
+      rect1.display();
+      rect2.display();
+      rect3.display();
+      rect4.display();
+      rect5.display();
+      rect6.display();
+      
+  } else if(app_status=="slideshow") {
+    background(255);
+    image(slideimage1,0,0);
+    timer++;
+  } 
 }
-
 
 //画面をタッチしたとき
-void mousePressed()
-{
-  try {
-    gBuffer.save("//sdcard//eisha/"+year()+month()+day()+hour()+minute()+second()+".png");
-  } catch(NullPointerException e) {
-    println(e); 
+void mousePressed() {
+  println(createInput("//sdcard//eisha/1329620549615.png"));
+  if(app_status=="menu to shot"){
+    toggleCamera();
+    app_status = "RAKUGAKI";
+    photo = gBuffer;
+    
+  } else if(app_status=="enq") {
+    println("push!!!");
+    if(rect1.pressed()) println(rect1.locked);
+    if(rect2.pressed()) println(rect2.locked);
+    if(rect3.pressed()) println(rect3.locked);
+    if(rect4.pressed()) println(rect4.locked);
+    if(rect5.pressed()){
+      rect6.toggled();
+    }
+    if(rect6.pressed()) {
+      rect5.toggled();
+    }
+    if(mouseX>600 && mouseY>=10 && mouseX<=750 && mouseY <=60){
+      String[] lines = new String[5];
+      lines[0] = String.valueOf(rect1.locked);
+      lines[1] = String.valueOf(rect2.locked);
+      lines[2] = String.valueOf(rect3.locked);
+      lines[3] = String.valueOf(rect4.locked);
+      lines[4] = String.valueOf(rect5.locked); 
+      
+      if(!directory2.isDirectory()){
+        directory2.mkdir();
+       }
+      saveStrings("//sdcard//eisha/data/"+utime+".txt", lines);
+      files = dir.listFiles();
+      try {
+      slideimage1 = BImage2PImage(ImageIO.read(files[0]));
+      } catch (IOException e) {
+        println(e);
+      }
+      app_status="slideshow";
+    }
   }
-  toggleCamera();
-  println("saved:"+year()+month()+day()+hour()+minute()+second()+".png");
-  println("mouseX:"+mouseX);
-  println("mouseY:"+mouseY);
-  photo = gBuffer;
-  getfilelist("//sdcard//eisha/");
+}
+void keyPressed() {
+  if(key == CODED) {
+    if(keyCode == MENU) {
+      if(app_status=="RAKUGAKI"){
+        try {
+          if(!directory.isDirectory()){
+            directory.mkdir();
+          }
+          utime = System.currentTimeMillis();
+          save("//sdcard//eisha/"+utime+".png");
+          println("saved:"+utime+".png");
+        } catch(NullPointerException e) {
+          println(e); 
+        }
+        println("mouseX:"+motionX);
+        println("mouseY:"+motionY);
+        photo = gBuffer;
+        app_status="enq";
+        rect1 = new RectButton(30, 100, 40);
+        rect2 = new RectButton(400, 100, 40);
+        rect3 = new RectButton(30, 180, 40);
+        rect4 = new RectButton(400, 180, 40);
+        rect5 = new RectButton(30, 330, 40);
+        rect5.toggled();
+        rect6 = new RectButton(400, 330, 40);
+        getfilelist("//sdcard//eisha/");
+        background(255);
+      }
+    }
+  }
 }
 
 
+public boolean surfaceTouchEvent(MotionEvent event) {
+    if(app_status=="RAKUGAKI"){
+      if(event.getAction()==MotionEvent.ACTION_DOWN){
+        posx=motionX;
+        posy=motionY;
+        println("movedX:"+posx+" -> "+motionX);
+        println("click");
+      }else if(event.getAction()==MotionEvent.ACTION_MOVE){
+        if(abs(motionX-posx)<100){
+          if(abs(motionY-posy)<100){
+            println("movedX:"+posx+" -> "+motionX);
+            strokeWeight(motionPressure*200);
+            line(posx, posy, motionX, motionY); 
+            println("dragg");
+          }
+        }
+        posx=motionX;
+        posy=motionY;
+      }else if(event.getAction()==MotionEvent.ACTION_UP){
+        println("release");
+      }
+    }
+  return super.surfaceTouchEvent(event);
+}
+
 // Setup camera globals:
-CameraSurfaceView gCamSurfView = null; // CHANGE: declare as null
-//Context appContext = null;
-// This is the physical image drawn on the screen representing the camera:
+CameraSurfaceView gCamSurfView = null;
 PImage gBuffer;
+
 
 void onResume() {
   super.onResume();
-  println("onResume()!");
-  // Sete orientation here, before Processing really starts, or it can get angry:
-  //orientation(PORTRAIT);
-  //appContext = this.getApplicationContext();
-
-  // Create our 'CameraSurfaceView' objects, that works the magic:
+  text(app_status,150,380,500,300);
   if (gCamSurfView == null) // So it doesnt make a new one everytime you resume.
   {
     gCamSurfView = new CameraSurfaceView(this.getApplicationContext());
     println("Made a new CameraSurfaceView");
+    toggleCamera();
   }
 }
 
@@ -101,29 +236,24 @@ void onPause()
   stopCamera();
 }
 
-//-----------------------------------------------------------------------------------------
+
+
 //-----------------------------------------------------------------------------------------
 
 public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
-  // Object that accesses the camera, and updates our image data
-  // Using ideas pulled from 'Android Wireless Application Development', page 340
 
   SurfaceHolder mHolder;
   Camera cam = null;
   Camera.Size prevSize;
   boolean cameraPaused = false;
 
-  // SurfaceView Constructor:  : ---------------------------------------------------
   CameraSurfaceView(Context context) {
     super(context);
-
     mHolder = getSurfaceHolder();
   }
   
   void cameraStart()
-  {
-    app_status = "tap to shot";
-    
+  {    
     println("cameraStart");
     mHolder.addCallback(this);
     if (cam == null) cam = Camera.open();
@@ -154,7 +284,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     if (cam == null) {
       cameraStart();
     } else {
-      app_status = "saved!";
       cameraStop();
     }
   }
@@ -207,7 +336,7 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     cameraStop();
   }
 
-  //  Camera.PreviewCallback stuff: ------------------------------------------------------
+
   void onPreviewFrame(byte[] data, Camera cam) {
       gBuffer.loadPixels();
       decodeYUV420SP(gBuffer.pixels, data, prevSize.width, prevSize.height);
@@ -267,6 +396,7 @@ void stopCamera()
 }
 
 void toggleCamera() {
+  app_status = "menu to shot";
   gCamSurfView.cameraToggle();
 }
 
@@ -286,3 +416,14 @@ void getfilelist(String path) {
     System.out.println((i + 1) + ":    " + file);
   }
 }
+
+PImage BImage2PImage(BufferedImage bImg) {
+    PImage pImg = createImage(bImg.getWidth(), bImg.getHeight(), ARGB);
+    for(int y = 0; y < pImg.height; y++) {
+        for(int x = 0; x < pImg.width; x++) {
+            pImg.pixels[y * pImg.width + x] = bImg.getRGB(x, y);
+        }
+    }
+    return pImg;
+}
+
