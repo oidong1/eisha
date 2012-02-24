@@ -1,18 +1,6 @@
 /*
   code name : eisha
   license   : GNU GPL v3
-
-  notice:
-  save key = menu
-  
-  !!!issue!!!!!
-  -save or not -> draw something
-  -enq mode
-  -SlideShow
-  
-  for camera mode
-        app_status = "tap to shot";
-        toggleCamera();
   
 */
 import java.awt.image.BufferedImage;
@@ -41,8 +29,6 @@ long utime;
 File dir = new File("//sdcard//eisha/");
 File[] files;
 
-/*  static data and settings  */
-
 String question1;
 String[] answer1 = new String[4];
 String question2;
@@ -51,7 +37,6 @@ RectButton rect1, rect2, rect3, rect4, rect5, rect6;
 
 void setup() {
   frameRate(10);
-  //画面の向きを固定(横)
   orientation(LANDSCAPE);
   size(768,432);
   question1 = "Q1 Was this watch expensive?";
@@ -69,11 +54,11 @@ void setup() {
 public String sketchRenderer() {
    return P2D;
 }
-/*  end  */
+
 
 float posx;
 float posy;
-int timer = 0;
+
 PImage slideimage1;
 PImage slideimage2;
 
@@ -113,9 +98,8 @@ void draw()
   } 
 }
 
-//画面をタッチしたとき
+
 void mousePressed() {
-  println(createInput("//sdcard//eisha/1329620549615.png"));
   if(app_status=="menu to shot"){
     toggleCamera();
     app_status = "RAKUGAKI";
@@ -145,12 +129,8 @@ void mousePressed() {
         directory2.mkdir();
        }
       saveStrings("//sdcard//eisha/data/"+utime+".txt", lines);
-      files = dir.listFiles();
-      try {
-      slideimage1 = BImage2PImage(ImageIO.read(files[0]));
-      } catch (IOException e) {
-        println(e);
-      }
+      
+      //error
       app_status="slideshow";
     }
   }
@@ -416,14 +396,3 @@ void getfilelist(String path) {
     System.out.println((i + 1) + ":    " + file);
   }
 }
-
-PImage BImage2PImage(BufferedImage bImg) {
-    PImage pImg = createImage(bImg.getWidth(), bImg.getHeight(), ARGB);
-    for(int y = 0; y < pImg.height; y++) {
-        for(int x = 0; x < pImg.width; x++) {
-            pImg.pixels[y * pImg.width + x] = bImg.getRGB(x, y);
-        }
-    }
-    return pImg;
-}
-
