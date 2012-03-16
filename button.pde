@@ -59,13 +59,10 @@ class RectButton extends Button
   }
 
   boolean over() {
-    print("is it over?");
     if( overRect(x, y, size, size) ) {
-      print("over!");
       over = true;
       return true;
     } else {
-      print("not over!");
       over = false;
       return false;
     }
